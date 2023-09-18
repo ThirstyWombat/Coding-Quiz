@@ -1,7 +1,7 @@
 var currentQuestionIndex = 0;
 var time = questions.length * 15;
 var timerId;
-
+var questionTitle = document.getElementById("question-title");
 var questionsEl = document.getElementById("questions");
 var timerEl = document.getElementById("time");
 var choicesEl = document.getElementById("choices");
@@ -9,7 +9,8 @@ var submitBtn = document.getElementById("submit");
 var startBtn = document.getElementById("start");
 var initialsEl = document.getElementById("initials");
 var feedbackEl = document.getElementById("feedback");
-
+var startscrnEl = document.getElementById("start-screen");
+var endscrenEl = document.getElementById("end-screen");
 var sfxRight = new Audio("assets/sfx/correct.wav");
 var sfxWrong = new Audio("assets/sfx/incorrect.wav");
 
@@ -30,11 +31,7 @@ var sfxWrong = new Audio("assets/sfx/incorrect.wav");
 
 let secondsLeft = 75;
 
-// let startbuttonElement = document.querySelector("#startButton");
-
 console.log(timerEl.value);
-
-// let timeElement = document.querySelector("#time");
 
 function startTimer() {
   let timerInterval = setInterval(function () {
@@ -44,18 +41,97 @@ function startTimer() {
 
     if (secondsLeft < 1) {
       clearInterval(timerInterval);
+      gotoEndSreen();
     }
   }, 1000);
 }
-startBtn.addEventListener("click", startTimer);
 
-// submitButton.addEventListener("click", function (event) {
-//   event.preventDefault();
+function hideFeedback() {
+  setTimeout(() => {
+    feedbackEl.classList.add("hide");
+    feedbackEl.innerHTML = "";
+  }, 1000);
+}
 
-//   let initials = initialsInput.value;
-//   console.log(initials);
+function correctAnswer() {
+  feedbackEl.classList.remove("hide");
+  var answerDiv = document.createElement("h2");
+  answerDiv.textContent = "Correct!";
+  feedbackEl.appendChild(answerDiv);
+  currentQuestionIndex++;
+  hideFeedback();
+}
 
-//
+function incorrectAnswer() {
+  feedbackEl.classList.remove("hide");
+  var answerDiv = document.createElement("h2");
+  answerDiv.textContent = "Wrong!";
+  feedbackEl.appendChild(answerDiv);
+  secondsLeft -= 15;
+  currentQuestionIndex++;
+  hideFeedback();
+}
+function showQuestion() {
+  // var question = questions[currentQuestionIndex];
+  startscrnEl.classList.add("hide");
+  questionsEl.classList.remove("hide");
+  // questionTitle.textContent = question.title;
+}
+function gotoEndSreen() {
+  questionsEl.classList.add("hide");
+  endscrenEl.classList.remove("hide");
+}
 
-//   localStorage.setItem("initials", initials);
-// });
+function populateQuestionContent() {
+  if (currentQuestionIndex === 5) {
+    gotoEndSreen();
+  }
+  var question = questions[currentQuestionIndex];
+  questionTitle.textContent = question.title;
+  for (var i = 0; i < question.choices.length; i++) {
+    let choice = question.choices[i];
+    var choiceBtn = document.createElement("button");
+    choiceBtn.textContent = choice;
+    choicesEl.appendChild(choiceBtn);
+    console.log("correct answer is " + question.answer);
+    choiceBtn.addEventListener("click", function () {
+      console.log("choice is " + choice);
+      if (choice === question.answer) {
+        console.log("the current quesition index is " + currentQuestionIndex);
+        correctAnswer();
+        console.log(
+          "current question index after incorrect answer is " +
+            currentQuestionIndex
+        );
+        choicesEl.innerHTML = "";
+        populateQuestionContent();
+      } else {
+        console.log("the current quesition index is " + currentQuestionIndex);
+        incorrectAnswer();
+        console.log(
+          "current question index after incorrect answer is " +
+            currentQuestionIndex
+        );
+        choicesEl.innerHTML = "";
+        populateQuestionContent();
+      }
+    });
+  }
+}
+
+function startQuiz() {
+  startTimer();
+  showQuestion();
+  populateQuestionContent();
+}
+
+startBtn.addEventListener("click", startQuiz);
+
+submitBtn.addEventListener("click", function (event) {
+  event.preventDefault();
+
+  let initials = initialsEl.value;
+  console.log(initials);
+
+  localStorage.setItem("initials", initials);
+});
